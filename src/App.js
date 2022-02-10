@@ -1,8 +1,23 @@
-import React, { useState, useRef } from 'react';
-import { Map, APILoader, Marker, CircleMarker } from '@uiw/react-amap';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Map,
+  APILoader,
+  Marker,
+  CircleMarker,
+  ToolBarControl,
+  MassMarks,
+} from '@uiw/react-amap';
+import { citys } from './points';
+import { ScaleControl } from '@uiw/react-amap';
 
 const Example = () => {
   const [show, setShow] = useState(true);
+  const [viewMode, setViewMode] = useState('3D');
+  const [points, setPoints] = useState(citys);
+  const map = useRef();
+  const marker = useRef();
+  useEffect(() => {});
+
   const plugins = [
     'MapType',
     'Scale',
@@ -21,17 +36,47 @@ const Example = () => {
   return (
     <>
       <button onClick={() => setShow(!show)}>{show ? '隐藏' : '显示'}</button>
+      <button onClick={() => setViewMode(viewMode === '3D' ? '2D' : '3D')}>
+        {viewMode}地图
+      </button>
       <div
         style={{ width: '100%', height: '500px' }}
         center={[114.173355, 22.320048]}
       >
-        <Map zoom={10} plugins={plugins}>
-          <Marker
+        <Map
+          zoom={10}
+          plugins={plugins}
+          viewMode={viewMode}
+          pitch={viewMode === '2D' ? 0 : 70}
+        >
+          <ToolBarControl
             visiable={show}
-            title="香港特別行政區"
-            position={new AMap.LngLat(114.173355, 22.320048)}
+            autoPosition={true}
+            offset={[10, 10]}
+            position="RT"
+            viewMode="2D"
           />
-          {/*零散点 */}
+          <ScaleControl visiable={show} offset={[60, 10]} position="RT" />
+          <MassMarks
+            visiable={show}
+            data={points}
+            onClick={(evn) => {
+              if (!map.current) {
+                map.current = evn.target.getMap();
+                if (!marker.current) {
+                  marker.current = new AMap.Marker({
+                    content: 'this si the conetn ',
+                    map: map.current,
+                  });
+                }
+              }
+              if (marker.current) {
+                marker.current.setPosition(evn.data.lnglat);
+                marker.current.setLabel({ content: evn.data.name });
+              }
+            }}
+          />
+          {/*零散点 
           <Marker
             visiable={show}
             title="將軍澳小赤沙康城路1號"
@@ -74,7 +119,7 @@ const Example = () => {
             }}
             position={new AMap.LngLat(114.173355, 22.431456)}
           />
-          {/* 测试连续三个点 */}
+            测试连续三个点  
           <Marker
             visiable={show}
             icon={
@@ -111,6 +156,7 @@ const Example = () => {
             offset={new AMap.Pixel(-13, -30)}
             position={[114.181355, 22.431456]}
           />
+          */}
           <CircleMarker
             center={[114.185355, 22.431456]}
             radius={20}
